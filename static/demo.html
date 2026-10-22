@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Aster Tutoring · Reserve a session</title>
+  <link rel="stylesheet" href="/static/demo.css">
+  <script src="/static/demo.js" defer></script>
+</head>
+<body>
+  <main>
+    <header><span class="mark" aria-hidden="true">a</span><span>Aster Tutoring</span><span class="demo-pill">Example website</span></header>
+    <section class="intro"><p class="eyebrow">A LITTLE HELP GOES A LONG WAY</p><h1>Make room for<br>your next breakthrough.</h1><p>Reserve a free, 30-minute tutoring session. Choose your topic and we will save your place.</p></section>
+    <section class="booking-card" aria-labelledby="form-title">
+      <p class="eyebrow">YOUR NEXT STEP</p><h2 id="form-title">Reserve a tutoring session</h2>
+      <form id="booking" novalidate>
+        <div class="field" id="name-field"><label for="name">Full name</label><input id="name" name="name" autocomplete="name" required placeholder="Alex Rivera"></div>
+        <div class="field" id="email-field"><label for="email">Email address</label><input id="email" name="email" type="email" autocomplete="email" required placeholder="alex@example.com"></div>
+        <div class="field" id="topic-field"><label for="topic">Tutoring topic</label><select id="topic" name="topic" required><option value="">Choose a topic</option><option>Calculus</option><option>Linear algebra</option><option>Computer science</option></select></div>
+        <p id="form-message" role="status"></p>
+        <div id="action-slot"></div>
+        <p class="fine-print">Demo form. No email is sent and no real appointment is created.</p>
+      </form>
+      <section id="confirmation" data-ap-success="false" role="status" hidden><span class="confirmed-icon" aria-hidden="true">✓</span><h2>Appointment reserved</h2><p id="confirmation-details"></p><p>Wednesday · 3:00 PM · Online</p><p class="fine-print">This is a local demonstration booking.</p></section>
+    </section>
+    <footer>A welcoming place to ask your next question.</footer>
+  </main>
+  <div class="modal-backdrop" id="notice-layer" hidden><section id="notice" role="dialog" aria-modal="true" aria-labelledby="notice-title"><div id="dismiss-notice" role="button" tabindex="-1" aria-label="Close privacy notice">×</div><p class="eyebrow">BEFORE YOU BEGIN</p><h2 id="notice-title">Your session, your privacy.</h2><p>Our tutors only use your booking details to prepare for your session.</p><button id="notice-details" type="button">Privacy details</button><button id="notice-access" type="button">Accessibility information</button><p id="notice-message" role="status">You can close this notice to continue.</p></section></div>
+</body>
+</html>

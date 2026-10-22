@@ -218,3 +218,12 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# AccessProof local records and browser evidence
+.env.*
+!.env.example
+.data/
+.artifacts/
+test-results/
+playwright-report/
+.DS_Store

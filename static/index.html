@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="description" content="Test real website tasks with keyboard actions, inspect the evidence, and reproduce the result.">
+  <title>AccessProof — Keyboard journeys, with evidence</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <script defer src="/static/app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#workspace">Skip to workspace</a>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Application navigation">
+      <a class="brand" href="/" aria-label="AccessProof home">
+        <span class="brand-icon" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none"><path d="m6 21 6-12h8l6 12M9 17h14" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><path d="m13 23 3 3 7-7" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span><span class="brand-name">AccessProof<span class="brand-dot">.</span></span><span class="brand-tag">Every journey matters</span></span>
+      </a>
+      <p class="sidebar-label">WORKSPACE</p>
+      <nav aria-label="Workspace">
+        <a class="nav-link is-active" href="#workspace" aria-current="page"><svg class="nav-icon icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4" stroke="currentColor" stroke-width="1.7"/><path d="M8 12h8m-4-4v8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><span>New test</span></a>
+        <a class="nav-link" href="#history"><svg class="nav-icon icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4.4 8a8 8 0 1 1-.4 7M4 4v5h5m3-2v5l3 2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Run history</span><span class="nav-count" id="history-count">0</span></a>
+      </nav>
+      <div class="sidebar-note">
+        <div class="keycaps" aria-hidden="true"><kbd>Tab</kbd><span>→</span><kbd>Enter ↵</kbd></div>
+        <p class="note-title">Follow the keyboard.</p>
+        <p>See each action, where focus goes, and what gets in the way.</p>
+      </div>
+      <div class="sidebar-footer">
+        <a href="https://github.com/SS221908/accessproof" target="_blank" rel="noopener noreferrer"><svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m8 8-4 4 4 4m8-8 4 4-4 4m-3-11-2 18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>View source</span><span aria-hidden="true">↗</span></a>
+        <p>A small step toward a more usable web.</p>
+      </div>
+    </aside>
+
+    <main class="main-content" id="main-content">
+      <header class="topbar">
+        <div class="breadcrumbs"><span>Workspace</span><span aria-hidden="true">/</span><strong>Keyboard journeys</strong></div>
+        <div class="connection-pill" id="connection-status" data-state="offline"><span class="status-dot" aria-hidden="true"></span><span id="connection-text">Connecting to workspace</span></div>
+      </header>
+
+      <section id="workspace" aria-labelledby="page-title">
+        <div class="page-header">
+          <div>
+            <p class="eyebrow"><span aria-hidden="true">◉</span> TASK-BASED ACCESSIBILITY TESTING</p>
+            <h1 id="page-title">Can someone finish this task<br class="desktop-break"> using only a keyboard?</h1>
+            <p class="lede">Give the agent a task. Inspect the journey, reproduce a barrier,<br class="desktop-break"> and verify what changes after a fix.</p>
+          </div>
+          <div class="header-aside"><span class="date-label">POWERED BY</span><span class="date-value">NVIDIA + Nebius</span><span class="model-caption" id="model-caption">Loading model configuration…</span></div>
+        </div>
+
+        <div class="workspace-grid">
+          <div class="task-column">
+            <section class="card task-card" aria-labelledby="new-test-title">
+              <div class="card-heading"><p class="section-kicker">01 / DEFINE THE JOURNEY</p><h2 id="new-test-title">Start a keyboard test</h2><p class="card-description">One task. A real browser. Evidence you can inspect.</p></div>
+              <form id="test-form">
+                <div class="field">
+                  <label for="scenario">Demo website <span class="field-tag">4 scenarios</span></label>
+                  <select id="scenario" name="scenario" aria-describedby="scenario-description" required>
+                    <option value="unreachable">Unreachable booking button</option>
+                    <option value="working">Working appointment form</option>
+                    <option value="trap">Keyboard focus trap</option>
+                    <option value="variant">Different form layout</option>
+                  </select>
+                  <p class="scenario-description" id="scenario-description">A booking form with a control that cannot be reached using Tab.</p>
+                  <a class="scenario-preview" id="scenario-preview" href="/demo/unreachable" target="_blank" rel="noopener noreferrer">Open demo website <span aria-hidden="true">↗</span><span class="sr-only"> in a new tab</span></a>
+                </div>
+                <div class="field">
+                  <label for="goal">What should the user accomplish?</label>
+                  <textarea id="goal" name="goal" rows="4" minlength="10" maxlength="1200" required aria-describedby="goal-hint">Book a tutoring appointment for Alex Rivera, alex@example.com, topic Calculus.</textarea>
+                  <p class="field-hint" id="goal-hint">Include the details the agent needs to complete the form.</p>
+                </div>
+                <div class="field expected-field">
+                  <label for="expected-text">Expected confirmation text</label>
+                  <input id="expected-text" name="expected_text" type="text" value="Alex Rivera · alex@example.com · Calculus" minlength="3" maxlength="500" required aria-describedby="expected-hint">
+                  <p class="field-hint" id="expected-hint">A pass requires this text in the booking confirmation.</p>
+                </div>
+                <fieldset class="mode-fieldset">
+                  <legend>How should this run?</legend>
+                  <div class="mode-options">
+                    <label class="mode-option" id="live-mode-option" for="mode-live">
+                      <input type="radio" name="mode" id="mode-live" value="live" aria-describedby="mode-help">
+                      <span class="mode-icon" aria-hidden="true"><svg class="icon" viewBox="0 0 24 24" fill="none"><path d="m13 3-7 10h5l-1 8 8-11h-5V3Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                      <span class="mode-copy"><strong>Live NVIDIA agent</strong><small>Real model calls through Nebius</small></span>
+                    </label>
+                    <label class="mode-option" for="mode-offline">
+                      <input type="radio" name="mode" id="mode-offline" value="offline" checked aria-describedby="mode-help">
+                      <span class="mode-icon" aria-hidden="true"><svg class="icon" viewBox="0 0 24 24" fill="none"><rect x="4" y="6" width="16" height="12" rx="3" stroke="currentColor" stroke-width="1.7"/><path d="m10 9 4 3-4 3V9Z" fill="currentColor"/></svg></span>
+                      <span class="mode-copy"><strong>Offline fixture demo</strong><small>Deterministic demo · no AI calls</small></span>
+                    </label>
+                  </div>
+                  <p class="field-hint" id="mode-help">A fixture demonstration using sample data. No AI calls.</p>
+                </fieldset>
+                <div class="setup-hint" id="setup-hint" hidden><span aria-hidden="true">i</span><p>Live mode needs a Nebius API key on the server. Run the included key setup script, then restart AccessProof. You can explore the offline demo now.</p></div>
+                <p class="form-error" id="form-error" role="alert" hidden></p>
+                <button class="button button-primary" id="start-test" type="submit" disabled><span id="start-label">Start keyboard test</span><svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                <button class="button button-secondary" id="retry-config" type="button" hidden>Reconnect to workspace</button>
+                <p class="run-caption" id="run-caption">Every action is recorded. You can inspect the result.</p>
+              </form>
+            </section>
+            <div class="scope-note"><svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3 4 6v5c0 5 8 10 8 10s8-5 8-10V6l-8-3Z" stroke="currentColor" stroke-width="1.6"/><path d="m8 12 3 3 5-6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><p>Evidence for the journey you test. Use these results alongside manual accessibility and user testing.</p></div>
+          </div>
+
+          <div class="evidence-column">
+            <section class="card evidence-card" aria-labelledby="evidence-title">
+              <div class="evidence-topbar">
+                <div><p class="section-kicker">02 / INSPECT THE EVIDENCE</p><h2 class="evidence-title" id="evidence-title">The keyboard journey</h2></div>
+                <span class="run-status-pill" id="run-status" data-status="empty">Ready to test</span>
+              </div>
+              <div class="run-detail-bar" id="run-detail-bar" hidden><span class="run-mode-label" id="run-mode-label"></span><span id="run-id-label"></span></div>
+              <div class="browser-frame" id="browser-frame" aria-busy="false">
+                <div class="browser-toolbar"><span class="window-dots" aria-hidden="true"><span></span><span></span><span></span></span><span class="browser-address" id="browser-address">Choose a demo to begin</span><span class="browser-view-label">BROWSER</span></div>
+                <div class="browser-viewport">
+                  <img id="evidence-image" alt="Browser screenshot from the selected test action" hidden>
+                  <div class="empty-preview" id="empty-preview">
+                    <div class="empty-art" aria-hidden="true"><div class="wire-browser"><div class="wire-topline"><i></i><i></i><i></i></div><div class="wire-fields"><div class="wire-title"></div><div class="wire-input"></div><div class="wire-input short"></div><div class="wire-button"></div></div><span class="focus-cursor">↵</span></div><span class="tab-chip"><kbd>Tab</kbd> <span>Follow the focus</span></span></div>
+                    <h3 class="empty-title" id="empty-title">Your next journey starts here.</h3>
+                    <p class="empty-copy" id="empty-copy">Run a test to see the browser, keyboard actions,<br> and evidence appear step by step.</p>
+                  </div>
+                </div>
+              </div>
+              <div class="run-progress" id="run-progress" hidden><div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div><span id="progress-label">Starting the browser…</span></div>
+              <div class="evidence-meta">
+                <div class="meta-item"><span>Recorded steps</span><strong id="action-count">—</strong></div>
+                <div class="meta-item"><span>Task confirmation</span><strong id="assertion-status">Awaiting run</strong></div>
+                <div class="meta-item"><span>Selected action</span><strong id="selected-action">—</strong></div>
+              </div>
+              <p class="run-alert" id="run-alert" role="alert" hidden></p>
+              <div class="evidence-actions" id="evidence-actions" hidden>
+                <button class="button button-secondary button-small" id="retest-button" type="button"><svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 10a8 8 0 1 1 1 7M4 4v6h6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>Test fixed form</button>
+                <button class="button button-ghost button-small" id="refresh-run" type="button">Refresh</button>
+              </div>
+            </section>
+
+            <section class="card results-card" id="results-card" aria-labelledby="result-title" hidden>
+              <div class="result-heading"><span class="result-icon" id="result-icon" aria-hidden="true">↳</span><div><p class="section-kicker">THE RESULT</p><h2 id="result-title">Journey report</h2></div><span class="run-mode-label" id="result-mode-label"></span></div>
+              <p class="result-summary" id="result-summary"></p>
+              <p class="result-condition" id="result-condition" hidden></p>
+              <p class="success-confirmation" id="success-confirmation" hidden></p>
+              <ul class="result-evidence" id="result-evidence"></ul>
+              <p class="result-notice" id="result-notice" hidden></p>
+              <div class="button-row export-actions" id="export-actions"><a class="button button-ghost button-small" id="download-report" href="#" download>JSON report <span aria-hidden="true">↓</span></a><a class="button button-ghost button-small" id="download-test" href="#" download>Browser test <span aria-hidden="true">↓</span></a><a class="button button-ghost button-small" id="download-trace" href="#" download>Browser trace <span aria-hidden="true">↓</span></a></div>
+            </section>
+
+            <section class="card timeline-card" aria-labelledby="timeline-title">
+              <div class="timeline-heading"><div><p class="section-kicker">THE ACTION TRAIL</p><h2 id="timeline-title">Every step, accounted for.</h2></div><span class="timeline-count" id="timeline-count">0 steps</span></div>
+              <div class="timeline-empty" id="timeline-empty"><span aria-hidden="true">⌁</span><p>Keyboard actions and observations will appear here.</p></div>
+              <ol class="timeline" id="timeline" aria-label="Recorded keyboard actions"></ol>
+            </section>
+          </div>
+        </div>
+      </section>
+
+      <section class="history-section" id="history" aria-labelledby="history-title">
+        <div class="history-header"><div><p class="section-kicker">YOUR WORKSPACE</p><h2 id="history-title">Recent journeys</h2></div><span class="history-total" id="history-total">No runs yet</span></div>
+        <div class="history-empty" id="history-empty"><svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 5h14v15l-3-2-4 2-4-2-3 2V5Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 9h6m-6 4h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><p>Your test runs will be saved here, ready to inspect or compare.</p></div>
+        <div class="history-list" id="history-list"></div>
+      </section>
+      <footer class="page-footer"><span>AccessProof <span aria-hidden="true">·</span> Built for journeys that work.</span><span>Task evidence · Reproducible tests · Verified retests</span></footer>
+    </main>
+  </div>
+  <div class="sr-only" id="announcer" role="status" aria-live="polite" aria-atomic="true"></div>
+</body>
+</html>
