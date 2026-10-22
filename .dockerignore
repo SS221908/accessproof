@@ -1,0 +1,22 @@
+# Start with an empty build context and include only the source the image needs.
+**
+!Dockerfile
+!requirements.txt
+!requirements-hosted.txt
+!LICENSE
+!backend/
+!backend/*.py
+!static/
+!static/**
+!scripts/
+!scripts/*.py
+
+# Keep local credentials, caches, and generated records out of included folders.
+**/.env
+**/.env.*
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/.data/
+**/.artifacts/
+**/*.sqlite3

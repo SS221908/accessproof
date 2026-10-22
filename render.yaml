@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: accessproof-demo
+    runtime: docker
+    repo: https://github.com/SS221908/accessproof
+    branch: main
+    region: oregon
+    plan: free
+    numInstances: 1
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    autoDeployTrigger: commit
+    envVars:
+      - key: NEBIUS_API_KEY
+        sync: false
+      - key: NEBIUS_MODEL
+        value: nvidia/Nemotron-3.5-Super-VL
+      - key: NEBIUS_BASE_URL
+        value: https://api.tokenfactory.nebius.com/v1/
+      - key: ACCESSPROOF_DEMO_PASSWORD
+        generateValue: true
+      - key: ACCESSPROOF_REQUIRE_DEMO_AUTH
+        value: "true"
+      - key: ACCESSPROOF_HOST
+        value: 0.0.0.0
+      - key: PORT
+        value: "10000"

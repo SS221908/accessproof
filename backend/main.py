@@ -5,20 +5,28 @@ import json
 import os
 from pathlib import Path
 import re
+from urllib.parse import urlsplit
 from uuid import uuid4
 
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import FileResponse, Response
+from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from .config import Settings, get_settings
 from .schemas import RunRequest, SCENARIOS
+from .security import canonical_origin, public_origin, valid_demo_credentials
 from .store import RunStore, now
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings or get_settings()
+    auth_enabled = bool(settings.demo_password or settings.require_demo_auth)
+    if auth_enabled and len(settings.demo_password.strip()) < 16:
+        raise ValueError("Set ACCESSPROOF_DEMO_PASSWORD to an access code of at least 16 characters before hosting the demo.")
+    configured_origin = public_origin(settings.public_origin)
+    if settings.require_demo_auth and not configured_origin:
+        raise ValueError("Set ACCESSPROOF_PUBLIC_ORIGIN to the hosted HTTPS URL before hosting the demo.")
     settings.artifacts_dir.mkdir(parents=True, exist_ok=True)
     store = RunStore(settings.data_dir / "accessproof.sqlite3")
 
@@ -35,16 +43,34 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app = FastAPI(title="AccessProof", version="0.1.0", lifespan=lifespan)
     app.state.store = store
     app.state.settings = settings
-    allowed_hosts = [value.strip() for value in os.getenv("ACCESSPROOF_ALLOWED_HOSTS", "localhost,127.0.0.1,testserver").split(",") if value.strip()]
-    app.add_middleware(TrustedHostMiddleware, allowed_hosts=allowed_hosts)
+    allowed_hosts = {"localhost", "127.0.0.1", "testserver"}
+    allowed_hosts.update(value.strip() for value in os.getenv("ACCESSPROOF_ALLOWED_HOSTS", "").split(",") if value.strip())
+    if configured_origin:
+        hostname = urlsplit(configured_origin).hostname
+        allowed_hosts.add(f"[{hostname}]" if ":" in hostname else hostname)
+    if any("*" in host for host in allowed_hosts):
+        raise ValueError("ACCESSPROOF_ALLOWED_HOSTS must list exact hostnames, without wildcards.")
+    public_fixtures = {f"/demo/{item['id']}" for item in SCENARIOS}
+    public_paths = {"/health", "/static/demo.css", "/static/demo.js"} | public_fixtures
 
     @app.middleware("http")
     async def response_headers(request: Request, call_next):
-        response = await call_next(request)
+        is_public = request.method in {"GET", "HEAD"} and request.url.path in public_paths
+        if auth_enabled and not is_public and not valid_demo_credentials(request.headers.get("authorization"), settings.demo_password):
+            response = JSONResponse(
+                {"detail": "Sign in with the judge username and the demo access code."},
+                status_code=401,
+                headers={"WWW-Authenticate": 'Basic realm="AccessProof demo", charset="UTF-8"'},
+            )
+        else:
+            response = await call_next(request)
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["Referrer-Policy"] = "same-origin"
         response.headers["Content-Security-Policy"] = "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; frame-ancestors 'none'"
         return response
+
+    # Validate Host before evaluating private routes or credentials.
+    app.add_middleware(TrustedHostMiddleware, allowed_hosts=sorted(allowed_hosts))
 
     def get_run(run_id: str) -> dict:
         if not re.fullmatch(r"[0-9a-f]{32}", run_id):
@@ -55,6 +81,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         return document
 
     @app.get("/health")
+    @app.head("/health", include_in_schema=False)
     async def health():
         return {"status": "ok", "service": "AccessProof", "version": "0.1.0", "live_ready": bool(settings.api_key), "model": settings.model}
 
@@ -132,10 +159,15 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @app.post("/api/runs", status_code=201)
     async def start_run(spec: RunRequest, request: Request):
-        origin = str(request.base_url).rstrip("/")
+        origin = configured_origin or canonical_origin(str(request.base_url))
         request_origin = request.headers.get("origin")
-        if request_origin and request_origin.rstrip("/") != origin:
-            raise HTTPException(403, "Open AccessProof and start the test from its dashboard.")
+        if request_origin:
+            try:
+                same_origin = canonical_origin(request_origin) == origin
+            except ValueError:
+                same_origin = False
+            if not same_origin:
+                raise HTTPException(403, "Open AccessProof and start the test from its dashboard.")
         if spec.mode == "live" and not settings.api_key:
             raise HTTPException(503, "Add your Nebius key with python scripts/configure_key.py, then restart the server.")
         if spec.parent_id:
@@ -181,6 +213,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         return FileResponse(artifact(run_id, "trace.zip"), filename=f"accessproof-{run_id[:8]}-trace.zip")
 
     @app.get("/demo/{scenario}")
+    @app.head("/demo/{scenario}", include_in_schema=False)
     async def demo(scenario: str):
         if scenario not in {item["id"] for item in SCENARIOS}:
             raise HTTPException(404, "Example not found")

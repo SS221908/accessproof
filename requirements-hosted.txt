@@ -1,0 +1,8 @@
+# Direct dependency versions exercised by the deployment preparation checks.
+# Keep the general package constraints and install their pinned hosted versions.
+-r requirements.txt
+fastapi==0.160.0
+uvicorn==0.54.0
+playwright==1.63.0
+openai==3.36.1
+python-dotenv==1.2.4

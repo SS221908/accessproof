@@ -8,7 +8,7 @@ A visible booking confirmation containing the tester's expected text determines
 success independently of the model. The default expectation checks the fictional
 name, email, and tutoring topic together.
 
-This is the first local working version for the **Nebius x NVIDIA Global AI Hackathon**.
+This is a working prototype for the **Nebius x NVIDIA Global AI Hackathon**.
 The intended submission track is **Coding and Agentic Engineering**.
 
 ## Start on your Mac
@@ -184,12 +184,30 @@ Example request body:
 - Evaluate live NVIDIA runs on all bundled cases and additional form variations;
   report measured results, failures, model calls, and latency honestly.
 - Get feedback from developers and people who use keyboard navigation.
-- Host a working demo with access controls, a durable worker, and appropriate
-  inference budget management. The starter currently binds to localhost and uses
+- Deploy and validate the hosted browser workflow using [DEPLOY.md](DEPLOY.md).
+  The Docker image and Render Blueprint prepare a password-protected hosted demo;
+  a cloud deployment and its resource limits still need validation. The app uses
   a single in-process browser queue.
 - Record a public YouTube demonstration under three minutes.
 - Describe the exact NVIDIA model and Nebius runtime calls in the submission.
 - Add your own specific platform feedback to `HACKATHON.md`.
+
+## Hosted demo
+
+The repository includes a Dockerfile using Playwright's version-matched browser
+image, pinned direct hosted dependencies, and a Render Free Blueprint.
+See [DEPLOY.md](DEPLOY.md) for the account setup, secret
+environment variables, demo sign-in, and offline-then-live validation steps.
+
+Hosted deployments require username `judge` and the configured
+`ACCESSPROOF_DEMO_PASSWORD`. The app uses the configured public origin for its
+owned browser fixtures and requires an explicit allowed hostname. Render supplies
+those values automatically. Local development with `python scripts/run.py` keeps
+its loopback defaults.
+
+Render Free's 512 MB/0.1 CPU browser capacity has not been verified. Its history
+and artifacts are ephemeral and it sleeps when idle. The guide describes these
+limits; local success is not a hosted availability result.
 
 ## License
 
