@@ -7,6 +7,7 @@ runner is responsible for independently observing the fixture's success marker.
 from __future__ import annotations
 
 import json
+import logging
 import re
 from typing import Any
 from urllib.parse import urlsplit
@@ -23,6 +24,7 @@ ALLOWED_KEYS = frozenset(
     {"Tab", "Shift+Tab", "Enter", "Escape", "ArrowDown", "ArrowUp", "Space", "ControlOrMeta+A", "Backspace"}
 )
 MAX_INPUT_LENGTH = 200
+logger = logging.getLogger(__name__)
 
 SYSTEM_PROMPT = """You are AccessProof's keyboard-only website task planner.
 Your job is to attempt the user's GOAL through the observed controls. Take ONE
@@ -231,6 +233,19 @@ def _validate_decision(decision: Any) -> dict[str, str]:
     return result
 
 
+def _exception_class_chain(error: BaseException) -> str:
+    """Report bounded exception types without retaining messages or arguments."""
+    names: list[str] = []
+    seen: set[int] = set()
+    current: BaseException | None = error
+    while isinstance(current, BaseException) and id(current) not in seen and len(names) < 6:
+        seen.add(id(current))
+        name = type(current).__name__
+        names.append(name if re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]{0,63}", name) else "Exception")
+        current = current.__cause__ if current.__cause__ is not None else current.__context__
+    return " -> ".join(names)
+
+
 def _provider_error(error: Exception) -> PlannerError:
     status = getattr(error, "status_code", None)
     status = status if isinstance(status, int) else None
@@ -246,7 +261,9 @@ def _provider_error(error: Exception) -> PlannerError:
     if kind == "APITimeoutError" or isinstance(error, TimeoutError):
         return PlannerError("timeout", "The Nebius model request timed out. Start a new run to try again.")
     if kind == "APIConnectionError" or isinstance(error, ConnectionError):
-        return PlannerError("connection", "Could not connect to Nebius. Check network access and the configured endpoint.")
+        chain = _exception_class_chain(error)
+        logger.warning("Nebius connection failure: %s", chain)
+        return PlannerError("connection", "Could not connect to Nebius. Check network access and the configured endpoint. Transport: " + chain + ".")
     if status in (400, 422):
         return PlannerError("configuration", "Nebius rejected the request settings. Check the configured model and endpoint.", status)
     return PlannerError("provider", "The Nebius model request failed. Check the provider status or try a new run.", status)
@@ -258,6 +275,9 @@ class LivePlanner:
     def __init__(self, api_key: str, model: str, base_url: str) -> None:
         if not isinstance(api_key, str) or not api_key.strip():
             raise PlannerError("configuration", "Set a Nebius API key before starting a live run.")
+        api_key = api_key.strip()
+        if not api_key.isascii() or any(ord(character) < 33 or ord(character) == 127 for character in api_key):
+            raise PlannerError("configuration", "The Nebius API key contains whitespace, control characters, or non-ASCII characters. Check the hosted secret's formatting.")
         if not isinstance(model, str) or not model.strip().startswith("nvidia/") or not model.strip()[7:].strip():
             raise PlannerError("configuration", "Live mode requires an NVIDIA model ID beginning with nvidia/.")
         valid_endpoint = False
@@ -286,7 +306,7 @@ class LivePlanner:
         self.last_usage: dict[str, int] = {}
         self.total_usage: dict[str, int] = {}
         self._client = AsyncOpenAI(
-            api_key=api_key.strip(), base_url=base_url.strip().rstrip("/") + "/",
+            api_key=api_key, base_url=base_url.strip().rstrip("/") + "/",
             timeout=60.0, max_retries=0,
         )
 

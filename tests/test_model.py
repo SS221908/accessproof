@@ -1,6 +1,7 @@
 """No-network tests for model action boundaries and the offline fixture policy."""
 
 import json
+import ssl
 import unittest
 from types import SimpleNamespace
 from unittest.mock import patch
@@ -192,6 +193,65 @@ class LivePlannerTests(unittest.IsolatedAsyncioTestCase):
             await planner.decide({})
         self.assertEqual(caught.exception.category, "timeout")
         self.assertEqual(len(client.requests), 1)
+
+    async def test_connection_diagnostic_reports_types_without_secret_messages_or_retry(self):
+        connection_type = type("APIConnectionError", (Exception,), {})
+        transport_type = type("ConnectError", (Exception,), {})
+        error = connection_type("SECRET_KEY in the request header")
+        transport = transport_type("RAW_PROVIDER_BODY and SECRET_KEY")
+        certificate = ssl.SSLCertVerificationError(1, "SECRET_KEY in certificate details")
+        error.__cause__ = transport
+        transport.__cause__ = certificate
+        planner, client, _ = self.make_planner([error])
+        with self.assertLogs(model.logger, level="WARNING") as logs:
+            with self.assertRaises(model.PlannerError) as caught:
+                await planner.decide({})
+        self.assertEqual(caught.exception.category, "connection")
+        self.assertEqual(len(client.requests), 1)
+        chain = "APIConnectionError -> ConnectError -> SSLCertVerificationError"
+        self.assertIn(chain, caught.exception.message)
+        self.assertIn(chain, "\n".join(logs.output))
+        diagnostics = caught.exception.message + "\n".join(logs.output)
+        self.assertNotIn("SECRET_KEY", diagnostics)
+        self.assertNotIn("RAW_PROVIDER_BODY", diagnostics)
+        self.assertNotIn("certificate details", diagnostics)
+
+    def test_connection_diagnostic_handles_cycles_depth_and_unsafe_type_names(self):
+        first = ConnectionError("SECRET_KEY")
+        second = ValueError("RAW_PROVIDER_BODY")
+        first.__cause__ = second
+        second.__context__ = first
+        self.assertEqual(model._exception_class_chain(first), "ConnectionError -> ValueError")
+
+        errors = [RuntimeError("SECRET_KEY") for _ in range(12)]
+        for outer, inner in zip(errors, errors[1:]):
+            outer.__cause__ = inner
+        self.assertEqual(model._exception_class_chain(errors[0]).split(" -> "), ["RuntimeError"] * 6)
+
+        unsafe_type = type("BadType\nSECRET_KEY", (Exception,), {})
+        first.__cause__ = unsafe_type("RAW_PROVIDER_BODY")
+        with self.assertLogs(model.logger, level="WARNING") as logs:
+            diagnostic = model._provider_error(first)
+        self.assertIn("ConnectionError -> Exception", diagnostic.message)
+        self.assertNotIn("SECRET_KEY", diagnostic.message + "\n".join(logs.output))
+        self.assertNotIn("RAW_PROVIDER_BODY", diagnostic.message + "\n".join(logs.output))
+
+    def test_malformed_keys_fail_before_constructing_client(self):
+        keys = ["test key", "test\nkey", "test\tkey", "test\x00key", "test\x7fkey", "test\u200bkey", "testékey"]
+        with patch.object(model, "AsyncOpenAI") as constructor:
+            for key in keys:
+                with self.subTest(key=repr(key)), self.assertRaises(model.PlannerError) as caught:
+                    model.LivePlanner(key, "nvidia/test-model", model.DEFAULT_BASE_URL)
+                self.assertEqual(caught.exception.category, "configuration")
+                self.assertNotIn(key, caught.exception.message)
+            constructor.assert_not_called()
+
+    async def test_plain_key_still_trims_surrounding_whitespace(self):
+        client = FakeClient([])
+        with patch.object(model, "AsyncOpenAI", return_value=client) as constructor:
+            planner = model.LivePlanner(" \ntest-key\t ", "nvidia/test-model", model.DEFAULT_BASE_URL)
+        constructor.assert_called_once_with(api_key="test-key", base_url=model.DEFAULT_BASE_URL, timeout=60.0, max_retries=0)
+        await planner.aclose()
 
     def test_missing_key_fails_before_constructing_client(self):
         with patch.object(model, "AsyncOpenAI") as constructor:
