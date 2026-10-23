@@ -14,6 +14,7 @@ from fastapi.staticfiles import StaticFiles
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from .config import Settings, get_settings
+from .credentials import api_key_summary
 from .schemas import RunRequest, SCENARIOS
 from .security import canonical_origin, public_origin, valid_demo_credentials
 from .store import RunStore, now
@@ -88,6 +89,15 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @app.get("/api/config")
     async def config():
         return {"model": settings.model, "live_ready": bool(settings.api_key), "max_steps": settings.max_steps, "scenarios": SCENARIOS}
+
+    @app.get("/api/key-check")
+    async def key_check():
+        revision = os.getenv("RENDER_GIT_COMMIT", "").strip()
+        revision = revision[:12].lower() if re.fullmatch(r"[0-9a-fA-F]{12,64}", revision) else None
+        return JSONResponse(
+            {"key": api_key_summary(settings.api_key), "revision": revision},
+            headers={"Cache-Control": "no-store"},
+        )
 
     @app.get("/api/runs")
     async def list_runs():

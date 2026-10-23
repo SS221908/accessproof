@@ -1,6 +1,8 @@
 from datetime import datetime, timezone
 from dataclasses import replace
 import base64
+from hashlib import sha256
+import json
 from pathlib import Path
 import time
 
@@ -116,7 +118,7 @@ def test_hosted_auth_blocks_private_routes_before_any_provider_call(tmp_path, mo
     config = replace(settings(tmp_path, "test-private-provider-key"), demo_password=DEMO_PASSWORD)
     with TestClient(create_app(config)) as client:
         for path in (
-            "/", "/api/config", "/api/runs", "/api/runs/" + "a" * 32,
+            "/", "/api/config", "/api/key-check", "/api/runs", "/api/runs/" + "a" * 32,
             "/api/runs/" + "a" * 32 + "/report", "/api/runs/" + "a" * 32 + "/reproducer",
             "/api/runs/" + "a" * 32 + "/trace", "/artifacts/" + "a" * 32 + "/000.png",
             "/docs", "/openapi.json", "/static/index.html", "/static/app.js",
@@ -275,3 +277,70 @@ def test_wildcard_host_allowlist_is_rejected(tmp_path, monkeypatch):
     monkeypatch.setenv("ACCESSPROOF_ALLOWED_HOSTS", "*")
     with pytest.raises(ValueError, match="exact hostnames"):
         create_app(settings(tmp_path))
+
+
+def test_key_check_is_authenticated_metadata_for_the_loaded_key(tmp_path, monkeypatch):
+    saved_key = "  synthetic-current-provider-secret  "
+    config = replace(settings(tmp_path, saved_key), demo_password=DEMO_PASSWORD)
+    monkeypatch.setenv("RENDER_GIT_COMMIT", "ABCDEF0123456789ABCDEF0123456789ABCDEF0123")
+    with TestClient(create_app(config)) as client:
+        unauthorized = client.get("/api/key-check")
+        assert unauthorized.status_code == 401
+        assert "key" not in unauthorized.json()
+        # The endpoint must inspect the settings actually used by the worker,
+        # not a newly changed shell variable or a different dotenv value.
+        monkeypatch.setenv("NEBIUS_API_KEY", "a-different-shell-value")
+        response = client.get("/api/key-check", auth=("judge", DEMO_PASSWORD))
+        assert response.status_code == 200
+        assert response.headers["cache-control"] == "no-store"
+        assert response.json() == {
+            "key": {
+                "configured": True,
+                "format_valid": True,
+                "fingerprint": sha256(saved_key.strip().encode("utf-8")).hexdigest()[:12],
+                "invalid_characters": {"whitespace": 0, "controls": 0, "non_ascii": 0},
+            },
+            "revision": "abcdef012345",
+        }
+        for path in ("/api/key-check", "/api/config", "/health"):
+            body = client.get(path, auth=("judge", DEMO_PASSWORD)).text
+            assert saved_key.strip() not in body
+            assert DEMO_PASSWORD not in body
+            assert "a-different-shell-value" not in body
+
+
+def test_key_check_reports_only_invalid_character_counts_and_trimmed_fingerprint(tmp_path):
+    key = " \t synthetic-private-token\u200bé\tremaining \n"
+    config = replace(settings(tmp_path, key), demo_password=DEMO_PASSWORD)
+    with TestClient(create_app(config)) as client:
+        response = client.get("/api/key-check", auth=("judge", DEMO_PASSWORD))
+        assert response.status_code == 200
+        summary = response.json()["key"]
+        assert summary == {
+            "configured": True,
+            "format_valid": False,
+            "fingerprint": sha256(key.strip().encode("utf-8")).hexdigest()[:12],
+            "invalid_characters": {"whitespace": 1, "controls": 1, "non_ascii": 2},
+        }
+        assert set(response.json()) == {"key", "revision"}
+        assert json.dumps(key.strip(), ensure_ascii=True)[1:-1] not in json.dumps(response.json(), ensure_ascii=True)
+
+
+@pytest.mark.parametrize("revision,expected", [
+    ("", None), ("not-a-git-commit", None), ("ABCDEF0123456789ABCDEF0123456789ABCDEF0123", "abcdef012345"),
+    ("0123456789abcdef" * 4, "0123456789ab"), ("123", None), ("a" * 65, None),
+    ("abcdef012345<script>", None),
+])
+def test_key_check_revision_is_bounded_hex_or_null(tmp_path, monkeypatch, revision, expected):
+    monkeypatch.setenv("RENDER_GIT_COMMIT", revision)
+    config = replace(settings(tmp_path), demo_password=DEMO_PASSWORD)
+    with TestClient(create_app(config)) as client:
+        response = client.get("/api/key-check", auth=("judge", DEMO_PASSWORD))
+        assert response.status_code == 200
+        assert response.json() == {
+            "key": {
+                "configured": False, "format_valid": False, "fingerprint": None,
+                "invalid_characters": {"whitespace": 0, "controls": 0, "non_ascii": 0},
+            },
+            "revision": expected,
+        }

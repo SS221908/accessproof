@@ -12,6 +12,8 @@ import re
 from typing import Any
 from urllib.parse import urlsplit
 
+from .credentials import api_key_format_valid
+
 try:
     from openai import AsyncOpenAI
 except ImportError:  # Offline mode and its tests do not require an API SDK.
@@ -276,7 +278,7 @@ class LivePlanner:
         if not isinstance(api_key, str) or not api_key.strip():
             raise PlannerError("configuration", "Set a Nebius API key before starting a live run.")
         api_key = api_key.strip()
-        if not api_key.isascii() or any(ord(character) < 33 or ord(character) == 127 for character in api_key):
+        if not api_key_format_valid(api_key):
             raise PlannerError("configuration", "The Nebius API key contains whitespace, control characters, or non-ASCII characters. Check the hosted secret's formatting.")
         if not isinstance(model, str) or not model.strip().startswith("nvidia/") or not model.strip()[7:].strip():
             raise PlannerError("configuration", "Live mode requires an NVIDIA model ID beginning with nvidia/.")

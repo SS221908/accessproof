@@ -31,14 +31,29 @@ Keep the demo password available for the judges through the submission's private
 testing instructions. Anyone with it can run the shared demo and view its stored
 reports. Use fictional booking details in this demonstration.
 
-On a Mac, this helper copies the saved Nebius key into the clipboard without
-printing it. Run it from the project folder, then paste into Render's
-`NEBIUS_API_KEY` value field:
+On a Mac, this helper checks the saved key's formatting and authenticates it with
+the model-list API before saving and copying it. This makes no model-inference
+request and never prints the key. Run it from the project folder, then immediately
+paste into Render's `NEBIUS_API_KEY` value field:
 
 ```bash
 source .venv/bin/activate
 python scripts/copy_saved_key.py
 ```
+
+For a fresh replacement key, run `python scripts/copy_saved_key.py --new` and
+paste the full new secret only when its hidden prompt appears. Successful
+verification saves the key privately in `.env` and copies it to the clipboard.
+Use Render's **Save, rebuild, and deploy** action after replacing its value.
+
+If the hosted app still rejects the key's formatting, open
+`<your-service-https-url>/api/key-check` in the signed-in browser. This protected
+page reports the deployed revision, format validity, invalid-character counts,
+and a short SHA-256 fingerprint. Compare its fingerprint with the one printed by
+the Mac helper: matching values confirm that both use the same trimmed key.
+The page never returns the key or any part of it. A mismatch indicates that the
+copied value or the running environment differs; confirm the new deploy is Live
+and replace the correct `NEBIUS_API_KEY` value again.
 
 ### First checks
 
