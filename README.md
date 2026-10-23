@@ -11,12 +11,18 @@ name, email, and tutoring topic together.
 This is a working prototype for the **Nebius x NVIDIA Global AI Hackathon**.
 The intended submission track is **Coding and Agentic Engineering**.
 
+**Hosted demo:** <https://accessproof-demo.onrender.com> — username `judge`, with
+the demo password provided separately to judges. Recorded live fixture results
+and downloadable evidence are in [EVALUATION.md](EVALUATION.md).
+
 ## Start on your Mac
 
-From your existing repository folder:
+For a fresh checkout:
 
 ```bash
-cd ~/accessproof
+git clone https://github.com/SS221908/accessproof.git
+cd accessproof
+python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements.txt
 ```
@@ -29,22 +35,18 @@ installed, or on another operating system, install Playwright's Chromium:
 python -m playwright install chromium
 ```
 
-If this is a fresh checkout, create the environment before activating it:
+Create a Token Factory API key and enter its full secret in a hidden prompt:
 
 ```bash
-python3 -m venv .venv
+python scripts/copy_saved_key.py --new
 ```
 
-Configure the same Nebius Token Factory key you successfully tested:
-
-```bash
-python scripts/configure_key.py
-```
-
-The script pauses. Copy the API key from Nebius using its copy icon, return to the
-Terminal, and **press Enter without pasting**. On macOS it reads the clipboard and
-saves the key to a local `.env` file with owner-only permissions. That file is
-ignored by Git. On other operating systems it uses a hidden terminal prompt.
+When the hidden prompt appears, copy the full new secret from Nebius, return to
+Terminal, paste, and press Enter. The helper verifies the key with the model-list
+API before saving it in an ignored `.env` file with owner-only permissions. It
+prints a fingerprint instead of the key. This verification makes no inference
+request. On other operating systems, use `python scripts/configure_key.py` for
+hidden key entry instead of the macOS clipboard helper.
 
 Then start the application:
 
@@ -62,7 +64,7 @@ Open **http://127.0.0.1:8000**. Keep that Terminal running. Press Ctrl+C to stop
 3. Choose **Live NVIDIA** to run Nemotron through Nebius Token Factory, or explicitly
    select **Offline demo** to exercise the browser without any AI requests.
 4. Start the test. Review the action timeline, screenshot evidence, and report.
-5. Use **Retest fixed form** to attempt the same goal on the repaired example.
+5. Use **Test fixed form** to attempt the same goal on the repaired example.
 6. Download the report, reproducer, or browser trace.
 
 The bundled examples are owned test fixtures; no real appointment is created.
@@ -78,6 +80,8 @@ Live mode uses `AsyncOpenAI` with Nebius Token Factory's inference API:
 - Default model: `nvidia/Nemotron-3.5-Super-VL`
 - The model receives the user's task, visible controls and values, active keyboard
   focus, status messages, and a bounded action history.
+- Requests use structured text observations. Screenshots are captured as evidence
+  for developers to inspect.
 - It chooses one validated keyboard action at a time: press a permitted key, type
   text into the currently focused field, or report a stop condition.
 - Playwright executes the action. Browser observations determine the final result.
@@ -161,6 +165,7 @@ the recorded actions; substantial form layout changes may require a new task run
 | --- | --- |
 | `GET /health` | Application status and whether a key is configured |
 | `GET /api/config` | Available fixtures, model name, live readiness |
+| `GET /api/key-check` | Protected key-format summary, fingerprint, and deployed revision |
 | `POST /api/runs` | Start a bounded live or offline test |
 | `GET /api/runs` | Saved run history |
 | `GET /api/runs/{id}` | Current status, actions, and report |
@@ -184,11 +189,11 @@ Example request body:
 - Evaluate live NVIDIA runs on all bundled cases and additional form variations;
   report measured results, failures, model calls, and latency honestly.
 - Get feedback from developers and people who use keyboard navigation.
-- Deploy and validate the hosted browser workflow using [DEPLOY.md](DEPLOY.md).
-  The Docker image and Render Blueprint prepare a password-protected hosted demo;
-  a cloud deployment and its resource limits still need validation. The app uses
-  a single in-process browser queue.
+- Keep the hosted demo and private judging access available. The recorded hosted
+  live results cover the broken and repaired fixtures; sustained capacity and
+  availability remain unmeasured. The app uses a single in-process browser queue.
 - Record a public YouTube demonstration under three minutes.
+- Follow [DEMO_SCRIPT.md](DEMO_SCRIPT.md) for the screen sequence and narration.
 - Describe the exact NVIDIA model and Nebius runtime calls in the submission.
 - Add your own specific platform feedback to `HACKATHON.md`.
 
@@ -205,9 +210,10 @@ owned browser fixtures and requires an explicit allowed hostname. Render supplie
 those values automatically. Local development with `python scripts/run.py` keeps
 its loopback defaults.
 
-Render Free's 512 MB/0.1 CPU browser capacity has not been verified. Its history
-and artifacts are ephemeral and it sleeps when idle. The guide describes these
-limits; local success is not a hosted availability result.
+The supplied evidence records two completed hosted live runs on Render Free:
+one observed barrier and one successful booking. This does not measure sustained
+capacity or uptime. Runtime history and artifacts are ephemeral and the service
+sleeps when idle; download evidence you want to keep. See [DEPLOY.md](DEPLOY.md).
 
 ## License
 

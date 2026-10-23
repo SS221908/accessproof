@@ -1,0 +1,465 @@
+{
+  "id": "22e529cff0334ccfb3d716544185ab84",
+  "scenario": "unreachable",
+  "goal": "Book a tutoring appointment for Alex Rivera, alex@example.com, topic Calculus.",
+  "expected_text": "Alex Rivera \u00b7 alex@example.com \u00b7 Calculus",
+  "mode": "live",
+  "model": "nvidia/Nemotron-3.5-Super-VL",
+  "status": "blocked",
+  "created_at": "2026-10-23T01:53:27.610281+00:00",
+  "updated_at": "2026-10-23T01:54:11.497068+00:00",
+  "parent_id": null,
+  "steps": [
+    {
+      "seq": 0,
+      "action": "observe",
+      "key": null,
+      "text": null,
+      "reason": "Initial browser state before keyboard interaction.",
+      "focused_before": "body",
+      "focused_after": "body",
+      "focused_tag": "body",
+      "input_kind": "other",
+      "value_before": "",
+      "value_after": "",
+      "value_changed": false,
+      "selected_label_before": null,
+      "selected_label_after": null,
+      "selected_index_before": null,
+      "selected_index_after": null,
+      "selects_before": [
+        {
+          "id": "topic",
+          "value": "",
+          "selected_index": 0,
+          "selected_label": "Choose a topic",
+          "multiple": false
+        }
+      ],
+      "selects_after": [
+        {
+          "id": "topic",
+          "value": "",
+          "selected_index": 0,
+          "selected_label": "Choose a topic",
+          "multiple": false
+        }
+      ],
+      "screenshot": "000.png",
+      "timestamp": "2026-10-23T01:53:37.993260+00:00"
+    },
+    {
+      "seq": 1,
+      "action": "press",
+      "key": "Tab",
+      "text": null,
+      "reason": "Move focus to the first form field (Full name).",
+      "focused_before": "body",
+      "focused_after": "name",
+      "focused_tag": "body",
+      "input_kind": "other",
+      "value_before": "",
+      "value_after": null,
+      "value_changed": null,
+      "selected_label_before": null,
+      "selected_label_after": null,
+      "selected_index_before": null,
+      "selected_index_after": null,
+      "selects_before": [
+        {
+          "id": "topic",
+          "value": "",
+          "selected_index": 0,
+          "selected_label": "Choose a topic",
+          "multiple": false
+        }
+      ],
+      "selects_after": [
+        {
+          "id": "topic",
+          "value": "",
+          "selected_index": 0,
+          "selected_label": "Choose a topic",
+          "multiple": false
+        }
+      ],
+      "screenshot": "001.png",
+      "timestamp": "2026-10-23T01:53:40.786668+00:00"
+    },
+    {
+      "seq": 2,
+      "action": "type",
+      "key": null,
+      "text": "Alex Rivera",
+      "reason": "Enter the full name into the focused name field.",
+      "focused_before": "name",
+      "focused_after": "name",
+      "focused_tag": "input",
+      "input_kind": "text",
+      "value_before": "",
+      "value_after": "Alex Rivera",
+      "value_changed": true,
+      "selected_label_before": null,
+      "selected_label_after": null,
+      "selected_index_before": null,
+      "selected_index_after": null,
+      "selects_before": [
+        {
+          "id": "topic",
+          "value": "",
+          "selected_index": 0,
+          "selected_label": "Choose a topic",
+          "multiple": false
+        }
+      ],
+      "selects_after": [
+        {
+          "id": "topic",
+          "value": "",
+          "selected_index": 0,
+          "selected_label": "Choose a topic",
+          "multiple": false
+        }
+      ],
+      "screenshot": "002.png",
+      "timestamp": "2026-10-23T01:53:44.093380+00:00"
+    },
+    {
+      "seq": 3,
+      "action": "press",
+      "key": "Tab",
+      "text": null,
+      "reason": "Move focus from the name field to the email field.",
+      "focused_before": "name",
+      "focused_after": "email",
+      "focused_tag": "input",
+      "input_kind": "text",
+      "value_before": "Alex Rivera",
+      "value_after": "Alex Rivera",
+      "value_changed": false,
+      "selected_label_before": null,
+      "selected_label_after": null,
+      "selected_index_before": null,
+      "selected_index_after": null,
+      "selects_before": [
+        {
+          "id": "topic",
+          "value": "",
+          "selected_index": 0,
+          "selected_label": "Choose a topic",
+          "multiple": false
+        }
+      ],
+      "selects_after": [
+        {
+          "id": "topic",
+          "value": "",
+          "selected_index": 0,
+          "selected_label": "Choose a topic",
+          "multiple": false
+        }
+      ],
+      "screenshot": "003.png",
+      "timestamp": "2026-10-23T01:53:46.388622+00:00"
+    },
+    {
+      "seq": 4,
+      "action": "type",
+      "key": null,
+      "text": "alex@example.com",
+      "reason": "Enter the email address into the focused email field.",
+      "focused_before": "email",
+      "focused_after": "email",
+      "focused_tag": "input",
+      "input_kind": "text",
+      "value_before": "",
+      "value_after": "alex@example.com",
+      "value_changed": true,
+      "selected_label_before": null,
+      "selected_label_after": null,
+      "selected_index_before": null,
+      "selected_index_after": null,
+      "selects_before": [
+        {
+          "id": "topic",
+          "value": "",
+          "selected_index": 0,
+          "selected_label": "Choose a topic",
+          "multiple": false
+        }
+      ],
+      "selects_after": [
+        {
+          "id": "topic",
+          "value": "",
+          "selected_index": 0,
+          "selected_label": "Choose a topic",
+          "multiple": false
+        }
+      ],
+      "screenshot": "004.png",
+      "timestamp": "2026-10-23T01:53:50.290493+00:00"
+    },
+    {
+      "seq": 5,
+      "action": "press",
+      "key": "Tab",
+      "text": null,
+      "reason": "Move focus from the email field to the tutoring topic dropdown.",
+      "focused_before": "email",
+      "focused_after": "topic",
+      "focused_tag": "input",
+      "input_kind": "text",
+      "value_before": "alex@example.com",
+      "value_after": "alex@example.com",
+      "value_changed": false,
+      "selected_label_before": null,
+      "selected_label_after": null,
+      "selected_index_before": null,
+      "selected_index_after": null,
+      "selects_before": [
+        {
+          "id": "topic",
+          "value": "",
+          "selected_index": 0,
+          "selected_label": "Choose a topic",
+          "multiple": false
+        }
+      ],
+      "selects_after": [
+        {
+          "id": "topic",
+          "value": "",
+          "selected_index": 0,
+          "selected_label": "Choose a topic",
+          "multiple": false
+        }
+      ],
+      "screenshot": "005.png",
+      "timestamp": "2026-10-23T01:53:52.293436+00:00"
+    },
+    {
+      "seq": 6,
+      "action": "type",
+      "key": null,
+      "text": "Calculus",
+      "reason": "Select Calculus from the tutoring topic dropdown using type-ahead.",
+      "focused_before": "topic",
+      "focused_after": "topic",
+      "focused_tag": "select",
+      "input_kind": "select",
+      "value_before": "",
+      "value_after": "Calculus",
+      "value_changed": true,
+      "selected_label_before": "Choose a topic",
+      "selected_label_after": "Calculus",
+      "selected_index_before": 0,
+      "selected_index_after": 1,
+      "selects_before": [
+        {
+          "id": "topic",
+          "value": "",
+          "selected_index": 0,
+          "selected_label": "Choose a topic",
+          "multiple": false
+        }
+      ],
+      "selects_after": [
+        {
+          "id": "topic",
+          "value": "Calculus",
+          "selected_index": 1,
+          "selected_label": "Calculus",
+          "multiple": false
+        }
+      ],
+      "screenshot": "006.png",
+      "timestamp": "2026-10-23T01:53:54.688510+00:00"
+    },
+    {
+      "seq": 7,
+      "action": "press",
+      "key": "Tab",
+      "text": null,
+      "reason": "Move focus from the topic dropdown to the Reserve appointment button.",
+      "focused_before": "topic",
+      "focused_after": "body",
+      "focused_tag": "select",
+      "input_kind": "select",
+      "value_before": "Calculus",
+      "value_after": "Calculus",
+      "value_changed": false,
+      "selected_label_before": "Calculus",
+      "selected_label_after": "Calculus",
+      "selected_index_before": 1,
+      "selected_index_after": 1,
+      "selects_before": [
+        {
+          "id": "topic",
+          "value": "Calculus",
+          "selected_index": 1,
+          "selected_label": "Calculus",
+          "multiple": false
+        }
+      ],
+      "selects_after": [
+        {
+          "id": "topic",
+          "value": "Calculus",
+          "selected_index": 1,
+          "selected_label": "Calculus",
+          "multiple": false
+        }
+      ],
+      "screenshot": "007.png",
+      "timestamp": "2026-10-23T01:53:56.989388+00:00"
+    },
+    {
+      "seq": 8,
+      "action": "press",
+      "key": "Tab",
+      "text": null,
+      "reason": "Attempt to move focus to the Reserve appointment button to submit the form.",
+      "focused_before": "body",
+      "focused_after": "name",
+      "focused_tag": "body",
+      "input_kind": "other",
+      "value_before": "",
+      "value_after": null,
+      "value_changed": null,
+      "selected_label_before": null,
+      "selected_label_after": null,
+      "selected_index_before": null,
+      "selected_index_after": null,
+      "selects_before": [
+        {
+          "id": "topic",
+          "value": "Calculus",
+          "selected_index": 1,
+          "selected_label": "Calculus",
+          "multiple": false
+        }
+      ],
+      "selects_after": [
+        {
+          "id": "topic",
+          "value": "Calculus",
+          "selected_index": 1,
+          "selected_label": "Calculus",
+          "multiple": false
+        }
+      ],
+      "screenshot": "008.png",
+      "timestamp": "2026-10-23T01:53:59.788211+00:00"
+    },
+    {
+      "seq": 9,
+      "action": "press",
+      "key": "Shift+Tab",
+      "text": null,
+      "reason": "Attempt to navigate backward from the name field to reach the Reserve appointment button, since forward Tab cycles back to name and the button may be earlier in the reverse tab order.",
+      "focused_before": "name",
+      "focused_after": "body",
+      "focused_tag": "input",
+      "input_kind": "text",
+      "value_before": "Alex Rivera",
+      "value_after": "Alex Rivera",
+      "value_changed": false,
+      "selected_label_before": null,
+      "selected_label_after": null,
+      "selected_index_before": null,
+      "selected_index_after": null,
+      "selects_before": [
+        {
+          "id": "topic",
+          "value": "Calculus",
+          "selected_index": 1,
+          "selected_label": "Calculus",
+          "multiple": false
+        }
+      ],
+      "selects_after": [
+        {
+          "id": "topic",
+          "value": "Calculus",
+          "selected_index": 1,
+          "selected_label": "Calculus",
+          "multiple": false
+        }
+      ],
+      "screenshot": "009.png",
+      "timestamp": "2026-10-23T01:54:05.792224+00:00"
+    },
+    {
+      "seq": 10,
+      "action": "blocked",
+      "key": null,
+      "text": null,
+      "reason": "The form is complete (name, email, Calculus topic), but the Reserve appointment button is not keyboard-focusable and Tab/Shift+Tab navigation cycles between body and the name field without reaching the button, so it cannot be activated.",
+      "focused_before": "body",
+      "focused_after": "body",
+      "focused_tag": "body",
+      "input_kind": "other",
+      "value_before": "",
+      "value_after": "",
+      "value_changed": false,
+      "selected_label_before": null,
+      "selected_label_after": null,
+      "selected_index_before": null,
+      "selected_index_after": null,
+      "selects_before": [
+        {
+          "id": "topic",
+          "value": "Calculus",
+          "selected_index": 1,
+          "selected_label": "Calculus",
+          "multiple": false
+        }
+      ],
+      "selects_after": [
+        {
+          "id": "topic",
+          "value": "Calculus",
+          "selected_index": 1,
+          "selected_label": "Calculus",
+          "multiple": false
+        }
+      ],
+      "screenshot": "010.png",
+      "timestamp": "2026-10-23T01:54:08.686146+00:00"
+    }
+  ],
+  "report": {
+    "summary": "The tested keyboard task encountered an observed navigation barrier.",
+    "evidence": [
+      "Visible action \"Reserve appointment\" is omitted from sequential keyboard navigation (tabindex=-1).",
+      "6 observed Tab/Shift+Tab actions visited the other 3 enabled tab stops but never focused register.",
+      "This demonstrates a barrier in the tested keyboard task; it does not constitute a complete accessibility audit."
+    ],
+    "steps_count": 9,
+    "success_text": "",
+    "expected_text": "Alex Rivera \u00b7 alex@example.com \u00b7 Calculus",
+    "expected_text_matched": false,
+    "run_id": "22e529cff0334ccfb3d716544185ab84",
+    "goal": "Book a tutoring appointment for Alex Rivera, alex@example.com, topic Calculus.",
+    "url": "https://accessproof-demo.onrender.com/demo/unreachable",
+    "elapsed_seconds": 43.79,
+    "browser_version": "153.0.8010.12",
+    "blocked_requests": [],
+    "canceled_downloads": [],
+    "closed_popups": [],
+    "policy_violations": [],
+    "artifacts": {
+      "trace": "trace.zip",
+      "reproducer": "reproducer.py",
+      "events": "events.json"
+    }
+  },
+  "error": null,
+  "model_calls": 11,
+  "token_usage": {
+    "prompt_tokens": 19756,
+    "completion_tokens": 3535,
+    "total_tokens": 23291
+  }
+}

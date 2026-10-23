@@ -1,9 +1,10 @@
 # Host the AccessProof demo
 
 The Docker image serves the dashboard and runs its single browser worker.
-NVIDIA model inference continues through Nebius Token Factory. These files prepare
-a hosted deployment; they do not mean that a container build or hosted browser
-run has already succeeded.
+NVIDIA model inference continues through Nebius Token Factory. The hosted demo is
+<https://accessproof-demo.onrender.com>. The supplied [evaluation](EVALUATION.md)
+records two hosted live runs: an observed barrier on the broken fixture and a
+successful booking on the repaired fixture.
 
 ## Render: first hosted trial
 
@@ -103,10 +104,11 @@ service instance for this starter.
 
 ### Free-tier limits
 
-Render Free provides 0.1 CPU and 512 MB RAM. A complete Chromium workflow has not
-yet been validated within that hosted memory/CPU limit. A healthy `/health`
-response alone does not verify browser execution. Check the offline workflow and
-service logs before relying on this host for judging.
+Render Free provides 0.1 CPU and 512 MB RAM. The supplied reports record completed
+Chromium workflows on the hosted service, but memory headroom, sustained capacity,
+and uptime have not been measured. A healthy `/health` response alone does not
+verify browser execution. Check the offline workflow and service logs if deploying
+another instance.
 
 Free services sleep after 15 minutes without inbound traffic; waking takes about
 a minute. SQLite history and browser artifacts are lost on restart, redeploy, or
