@@ -9,10 +9,16 @@ from unittest.mock import patch
 from backend import model
 
 
-def response(content, reasoning="DO NOT RETAIN THIS"):
+def response(content, reasoning="DO NOT RETAIN THIS", *, finish_reason="stop", refusal=None, completion_tokens=12, reasoning_tokens=None):
     return SimpleNamespace(
-        choices=[SimpleNamespace(message=SimpleNamespace(content=content, reasoning_content=reasoning))],
-        usage=SimpleNamespace(prompt_tokens=41, completion_tokens=12, total_tokens=53),
+        choices=[SimpleNamespace(
+            finish_reason=finish_reason,
+            message=SimpleNamespace(content=content, reasoning_content=reasoning, refusal=refusal),
+        )],
+        usage=SimpleNamespace(
+            prompt_tokens=41, completion_tokens=completion_tokens, total_tokens=41 + completion_tokens,
+            completion_tokens_details=SimpleNamespace(reasoning_tokens=reasoning_tokens),
+        ),
     )
 
 
@@ -164,8 +170,10 @@ class LivePlannerTests(unittest.IsolatedAsyncioTestCase):
     async def test_done_requires_independent_success_observation(self):
         done = response('{"action":"done","reason":"Looks finished."}')
         planner, _, _ = self.make_planner([done, done])
-        with self.assertRaises(model.PlannerError):
+        with self.assertRaises(model.PlannerError) as caught:
             await planner.decide({"success": False})
+        self.assertEqual(len(caught.exception.diagnostics), 2)
+        self.assertIn("success is false", caught.exception.diagnostics[-1]["validation_error"])
         planner, _, _ = self.make_planner([done])
         self.assertEqual((await planner.decide({"success": True}))["action"], "done")
 
@@ -175,6 +183,85 @@ class LivePlannerTests(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(model.PlannerError):
             await planner.decide({})
 
+    async def test_invalid_responses_explain_validation_without_retaining_model_text(self):
+        cases = [
+            (json.dumps({"action": "press", "key": "Tab", "reason": "SECRET_MODEL_TEXT" + "x" * 240}), "Include a nonempty reason", "stop"),
+            (json.dumps({"action": "press", "key": "Control+L", "reason": "SECRET_MODEL_TEXT"}), "Use only an allowed keyboard key", "stop"),
+            ('{"action":"press","reason":"SECRET_MODEL_TEXT', "Return valid JSON only", "length"),
+        ]
+        for content, expected, finish in cases:
+            with self.subTest(validation=expected):
+                rejected = response(content, finish_reason=finish, refusal="SECRET_REFUSAL_TEXT", completion_tokens=2048)
+                planner, client, _ = self.make_planner([rejected, rejected])
+                with self.assertRaises(model.PlannerError) as caught:
+                    await planner.decide({})
+                error = caught.exception
+                self.assertEqual(error.category, "invalid_response")
+                self.assertEqual(len(client.requests), 2)
+                self.assertEqual([entry["attempt"] for entry in error.diagnostics], [1, 2])
+                self.assertEqual([entry["model_call"] for entry in error.diagnostics], [1, 2])
+                for entry in error.diagnostics:
+                    self.assertIn(expected, entry["validation_error"])
+                    self.assertEqual(entry["finish_reason"], finish)
+                    self.assertEqual(entry["content_length"], len(content))
+                    self.assertIs(entry["content_is_string"], True)
+                    self.assertIs(entry["refusal_present"], True)
+                    self.assertEqual(entry["completion_tokens"], 2048)
+                    self.assertIsNone(entry["reasoning_tokens"])
+                self.assertIn(expected, error.message)
+                self.assertIn("Finish reason: " + finish, error.message)
+                public = error.message + json.dumps(error.diagnostics) + json.dumps(client.requests)
+                self.assertNotIn("SECRET_MODEL_TEXT", public)
+                self.assertNotIn("SECRET_REFUSAL_TEXT", public)
+                self.assertNotIn("DO NOT RETAIN THIS", public)
+
+    async def test_reasoning_only_length_response_reports_shape_and_token_counts(self):
+        planner, client, _ = self.make_planner([
+            response(None, reasoning="SECRET_REASONING", finish_reason="length", completion_tokens=2048, reasoning_tokens=2048),
+            response("", reasoning="SECRET_REASONING", finish_reason="length", completion_tokens=2048, reasoning_tokens=2048),
+        ])
+        with self.assertRaises(model.PlannerError) as caught:
+            await planner.decide({})
+        first, last = caught.exception.diagnostics
+        self.assertIs(first["content_is_string"], False)
+        self.assertIsNone(first["content_length"])
+        self.assertIs(last["content_is_string"], True)
+        self.assertEqual(last["content_length"], 0)
+        for entry in (first, last):
+            self.assertEqual(entry["finish_reason"], "length")
+            self.assertEqual(entry["completion_tokens"], 2048)
+            self.assertEqual(entry["reasoning_tokens"], 2048)
+            self.assertIs(entry["refusal_present"], False)
+        self.assertEqual(len(client.requests), 2)
+        self.assertNotIn("SECRET_REASONING", caught.exception.message + json.dumps(caught.exception.diagnostics))
+
+    async def test_missing_choices_clear_prior_attempt_metadata(self):
+        rejected = response("SECRET_MODEL_TEXT", finish_reason="SECRET_FINISH_REASON", refusal="SECRET_REFUSAL_TEXT")
+        absent = SimpleNamespace(choices=[], usage=None)
+        planner, client, _ = self.make_planner([rejected, absent])
+        with self.assertRaises(model.PlannerError) as caught:
+            await planner.decide({})
+        first, last = caught.exception.diagnostics
+        self.assertEqual(first["finish_reason"], "unknown")
+        self.assertIsNone(last["finish_reason"])
+        self.assertIsNone(last["completion_tokens"])
+        self.assertIsNone(last["reasoning_tokens"])
+        self.assertIsNone(last["content_length"])
+        self.assertIs(last["content_is_string"], False)
+        self.assertIs(last["refusal_present"], False)
+        self.assertEqual(len(client.requests), 2)
+        public = caught.exception.message + json.dumps(caught.exception.diagnostics)
+        self.assertIn("Finish reason: not provided", public)
+        self.assertNotIn("SECRET", public)
+
+    async def test_missing_message_attributes_use_only_app_authored_feedback(self):
+        malformed = SimpleNamespace(choices=[SimpleNamespace()], usage=None)
+        planner, _, _ = self.make_planner([malformed, malformed])
+        with self.assertRaises(model.PlannerError) as caught:
+            await planner.decide({})
+        self.assertEqual(caught.exception.diagnostics[-1]["validation_error"], "Return a JSON object with a bounded keyboard action.")
+        self.assertIsNone(caught.exception.diagnostics[-1]["content_length"])
+
     async def test_provider_failures_are_safe_and_never_retried(self):
         for status, category in [(401, "authentication"), (402, "credits"), (403, "authentication"), (429, "rate_limit"), (500, "provider")]:
             with self.subTest(status=status):
@@ -183,6 +270,7 @@ class LivePlannerTests(unittest.IsolatedAsyncioTestCase):
                     await planner.decide({})
                 self.assertEqual(caught.exception.category, category)
                 self.assertEqual(caught.exception.status_code, status)
+                self.assertEqual(caught.exception.diagnostics, [])
                 self.assertEqual(len(client.requests), 1)
                 self.assertNotIn("SECRET", str(caught.exception))
                 self.assertNotIn("RAW_PROVIDER_BODY", str(caught.exception))

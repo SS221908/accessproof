@@ -344,3 +344,97 @@ def test_key_check_revision_is_bounded_hex_or_null(tmp_path, monkeypatch, revisi
             },
             "revision": expected,
         }
+
+
+@pytest.mark.parametrize("propagate", [False, True])
+@pytest.mark.parametrize("include_diagnostics", [False, True])
+def test_invalid_model_response_keeps_safe_diagnostics_and_failure_evidence(tmp_path, monkeypatch, propagate, include_diagnostics):
+    import backend.model
+    import backend.runner
+
+    private_key = "synthetic-private-provider-key-never-export"
+    raw_model_text = "RAW_PROVIDER_CONTENT_NEVER_EXPORT"
+    hidden_reasoning = "HIDDEN_REASONING_NEVER_EXPORT"
+    diagnostics = [
+        {"attempt": 1, "failure": "invalid_json", "content_length": 0, "finish_reason": "length"},
+        {"attempt": 2, "failure": "invalid_json", "content_length": 0, "finish_reason": "length"},
+    ] if include_diagnostics else []
+    calls = {"browser": 0, "planner": 0, "closed": 0}
+
+    class InvalidPlanner:
+        def __init__(self, **_kwargs):
+            self.calls_made = 0
+            self.total_usage = {}
+            self.raw_model_text = raw_model_text
+            self.hidden_reasoning = hidden_reasoning
+
+        async def decide(self, _observation):
+            calls["planner"] += 1
+            # One planner decision already exhausted its bounded correction.
+            self.calls_made = 2
+            self.total_usage = {"prompt_tokens": 31, "completion_tokens": 17, "total_tokens": 48}
+            error = backend.model.PlannerError(
+                "invalid_response", "The model did not return a valid action. Last validation: return valid JSON only.",
+            )
+            if include_diagnostics:
+                error.diagnostics = diagnostics
+            raise error
+
+        async def aclose(self):
+            calls["closed"] += 1
+
+    async def fake_runner(**kwargs):
+        calls["browser"] += 1
+        await kwargs["emit"]({"seq": 0, "action": "observe", "focused_before": "body", "focused_after": "body"})
+        await kwargs["emit"]({"seq": 1, "action": "press", "key": "Tab", "focused_before": "body", "focused_after": "name"})
+        try:
+            await kwargs["decide"]({"success": False})
+        except backend.model.PlannerError as error:
+            if propagate:
+                raise
+            # The real runner catches the planner exception and returns an
+            # execution error with the browser evidence already collected.
+            return {
+                "status": "error", "error": "PlannerError: " + error.message,
+                "steps": [],
+                "report": {
+                    "summary": "The run stopped because of a model execution error.",
+                    "evidence": [], "steps_count": 1, "success_text": "",
+                    "expected_text_matched": False, "browser_version": "test-browser",
+                },
+            }
+        raise AssertionError("The invalid planner must fail")
+
+    monkeypatch.setattr(backend.model, "LivePlanner", InvalidPlanner)
+    monkeypatch.setattr(backend.runner, "run_browser", fake_runner)
+    config = replace(settings(tmp_path, private_key), demo_password=DEMO_PASSWORD)
+    with TestClient(create_app(config), headers=demo_auth_headers()) as client:
+        created = client.post("/api/runs", json={"scenario": "working", "goal": "Book a tutoring appointment", "mode": "live"})
+        assert created.status_code == 201
+        run_id = created.json()["id"]
+        result = terminal_result(client, run_id)
+        assert result["status"] == "error"
+        assert "return valid JSON only" in result["error"]
+        assert result["model_calls"] == 2
+        assert result["token_usage"] == {"prompt_tokens": 31, "completion_tokens": 17, "total_tokens": 48}
+        assert len(result["steps"]) == 2
+        report = result.get("report") or {}
+        assert not report.get("expected_text_matched")
+        if not propagate:
+            assert report["steps_count"] == 1
+            assert report["browser_version"] == "test-browser"
+            assert report["evidence"] == []
+            assert report["success_text"] == ""
+        if include_diagnostics:
+            assert report["model_response_diagnostics"] == diagnostics
+        else:
+            assert "model_response_diagnostics" not in report
+        exported = client.get(f"/api/runs/{run_id}/report")
+        assert exported.status_code == 200
+        assert exported.json() == result
+        for secret in (private_key, raw_model_text, hidden_reasoning, DEMO_PASSWORD):
+            assert secret not in exported.text
+        assert client.get(f"/api/runs/{run_id}/report", headers={"Authorization": ""}).status_code == 401
+        assert client.get(f"/api/runs/{run_id}", headers={"Authorization": ""}).status_code == 401
+    assert calls == {"browser": 1, "planner": 1, "closed": 1}
+    assert RunStore(tmp_path / "data" / "accessproof.sqlite3").get(run_id) == result

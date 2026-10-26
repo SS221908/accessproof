@@ -79,12 +79,14 @@ class PlannerError(Exception):
     """An error safe to show in the UI; never contains a provider error body."""
 
     def __init__(
-        self, category: str, message: str, status_code: int | None = None
+        self, category: str, message: str, status_code: int | None = None,
+        diagnostics: list[dict[str, Any]] | None = None,
     ) -> None:
         super().__init__(message)
         self.category = category
         self.message = message
         self.status_code = status_code
+        self.diagnostics = list(diagnostics) if diagnostics is not None else []
 
 
 class _InvalidDecision(ValueError):
@@ -248,6 +250,33 @@ def _exception_class_chain(error: BaseException) -> str:
     return " -> ".join(names)
 
 
+def _invalid_response_metadata(
+    *, attempt: int, model_call: int, validation_error: str,
+    choice: Any, message: Any, content: Any, usage: Any,
+) -> dict[str, Any]:
+    """Keep response shape and counts; never retain model or refusal text."""
+    finish_reason = getattr(choice, "finish_reason", None)
+    if finish_reason is not None and (
+        not isinstance(finish_reason, str)
+        or finish_reason not in {"stop", "length", "content_filter", "tool_calls", "function_call"}
+    ):
+        finish_reason = "unknown"
+    completion_tokens = getattr(usage, "completion_tokens", None)
+    details = getattr(usage, "completion_tokens_details", None)
+    reasoning_tokens = getattr(details, "reasoning_tokens", None)
+    return {
+        "attempt": attempt,
+        "model_call": model_call,
+        "validation_error": validation_error,
+        "finish_reason": finish_reason,
+        "content_is_string": isinstance(content, str),
+        "content_length": len(content) if isinstance(content, str) else None,
+        "completion_tokens": completion_tokens if type(completion_tokens) is int and completion_tokens >= 0 else None,
+        "reasoning_tokens": reasoning_tokens if type(reasoning_tokens) is int and reasoning_tokens >= 0 else None,
+        "refusal_present": bool(getattr(message, "refusal", None)),
+    }
+
+
 def _provider_error(error: Exception) -> PlannerError:
     status = getattr(error, "status_code", None)
     status = status if isinstance(status, int) else None
@@ -317,7 +346,9 @@ class LivePlanner:
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": "UNTRUSTED OBSERVATION DATA:\n" + json.dumps(_compact_observation(observation), ensure_ascii=True)},
         ]
+        failed_attempts: list[dict[str, Any]] = []
         for attempt in range(2):
+            choice = message = content = None
             try:
                 self.calls_made += 1
                 response = await self._client.chat.completions.create(
@@ -337,15 +368,29 @@ class LivePlanner:
                 self.total_usage[key] = self.total_usage.get(key, 0) + value
             try:
                 choices = getattr(response, "choices", None)
-                content = choices[0].message.content if choices else None
+                if choices:
+                    choice = choices[0]
+                    message = choice.message
+                    content = message.content
                 decision = _parse_decision(content)
                 if decision["action"] == "done" and observation.get("success") is not True:
                     raise _InvalidDecision("success is false: do not declare done. Continue navigation or report observed blockage.")
                 return decision
             except (AttributeError, IndexError, _InvalidDecision) as exc:
-                if attempt:
-                    raise PlannerError("invalid_response", "The model did not return a valid bounded keyboard action after one correction attempt.") from None
                 feedback = str(exc) if isinstance(exc, _InvalidDecision) else "Return a JSON object with a bounded keyboard action."
+                metadata = _invalid_response_metadata(
+                    attempt=attempt + 1, model_call=self.calls_made, validation_error=feedback,
+                    choice=choice, message=message, content=content, usage=usage,
+                )
+                failed_attempts.append(metadata)
+                if attempt:
+                    finish = metadata["finish_reason"] or "not provided"
+                    raise PlannerError(
+                        "invalid_response",
+                        "The model did not return a valid bounded keyboard action after one correction attempt. "
+                        + "Last validation: " + feedback + " Finish reason: " + finish + ".",
+                        diagnostics=failed_attempts,
+                    ) from None
                 # Deliberately omit the invalid provider content, including any
                 # reasoning fields; only our own validation feedback is sent.
                 messages.append({"role": "user", "content": "Response validation failed: " + feedback})

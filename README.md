@@ -159,6 +159,14 @@ The reproducer is a standalone Python file using Playwright. To try a repaired
 version of the same page, set `ACCESSPROOF_TEST_URL` before running it. This replays
 the recorded actions; substantial form layout changes may require a new task run.
 
+If two model replies fail action validation, the run remains an **Error**. Its
+JSON report includes `model_response_diagnostics` for those two attempts: the
+application's validation reason, the model's finish status, reply character count,
+available completion/reasoning token counts, and whether a refusal was present.
+The diagnostics exclude model reply text, hidden reasoning, and refusal text.
+They distinguish an agent execution failure from an observed keyboard barrier.
+Download a failed report before redeploying if you want to preserve it.
+
 ## API
 
 | Endpoint | Purpose |

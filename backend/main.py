@@ -113,6 +113,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         from .runner import run_browser
 
         planner = None
+        model_response_diagnostics = []
+
+        def remember_model_response_diagnostics(error):
+            nonlocal model_response_diagnostics
+            diagnostics = getattr(error, "diagnostics", [])
+            if isinstance(diagnostics, list) and diagnostics:
+                # PlannerError contains only bounded, app-authored metadata.
+                # Never inspect or serialize the provider response or planner.
+                model_response_diagnostics = [dict(item) for item in diagnostics[-2:] if isinstance(item, dict)]
+
         try:
             async with app.state.run_lock:
                 store.update(document["id"], lambda current: current.update(status="running"))
@@ -120,11 +130,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
                 async def decide(observation: dict):
                     observation["scenario"] = document["scenario"]
-                    decision = await planner.decide(observation)
-                    store.update(document["id"], lambda current: current.update(
-                        model_calls=getattr(planner, "calls_made", 0),
-                        token_usage=getattr(planner, "total_usage", {}),
-                    ))
+                    try:
+                        decision = await planner.decide(observation)
+                    except PlannerError as error:
+                        remember_model_response_diagnostics(error)
+                        raise
+                    finally:
+                        store.update(document["id"], lambda current: current.update(
+                            model_calls=getattr(planner, "calls_made", 0),
+                            token_usage=getattr(planner, "total_usage", {}),
+                        ))
                     return decision
 
                 async def emit(event: dict):
@@ -142,14 +157,27 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                     expected_text=document["expected_text"],
                 )
                 result.pop("steps", None)
+                if result.get("status") == "error" and model_response_diagnostics:
+                    report = result.get("report") or {}
+                    report["model_response_diagnostics"] = model_response_diagnostics
+                    result["report"] = report
                 store.update(document["id"], lambda current: current.update(result))
         except asyncio.CancelledError:
             store.update(document["id"], lambda current: current.update(status="error", error="The run stopped when the server restarted."))
             raise
         except PlannerError as error:
             # The model adapter deliberately exposes only safe public messages.
+            remember_model_response_diagnostics(error)
             message = getattr(error, "message", str(error))
-            store.update(document["id"], lambda current: current.update(status="error", error=message))
+
+            def planner_failed(current):
+                current.update(status="error", error=message)
+                if model_response_diagnostics:
+                    report = current.get("report") or {}
+                    report["model_response_diagnostics"] = model_response_diagnostics
+                    current["report"] = report
+
+            store.update(document["id"], planner_failed)
         except Exception as error:
             message = f"Run stopped ({type(error).__name__}). Check that Chromium is installed: python -m playwright install chromium"
             store.update(document["id"], lambda current: current.update(status="error", error=message))
