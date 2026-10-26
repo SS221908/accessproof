@@ -15,6 +15,11 @@ The intended submission track is **Coding and Agentic Engineering**.
 the demo password provided separately to judges. Recorded live fixture results
 and downloadable evidence are in [EVALUATION.md](EVALUATION.md).
 
+The October 25 hosted live sequence detected a keyboard barrier in the broken
+demo and passed its linked repaired-form retest. The retest's parent ID matches
+the broken run. These are owned fixture results; the application selects a
+prebuilt repaired example rather than editing the page's code.
+
 ## Start on your Mac
 
 For a fresh checkout:

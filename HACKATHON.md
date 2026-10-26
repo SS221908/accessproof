@@ -17,8 +17,8 @@ specific task, with steps they can inspect and reproduce.
 AccessProof attempts a booking task using only keyboard actions in a real browser.
 It records focus, field and selection values, screenshots, and an action timeline.
 Developers can download a JSON report, a Playwright browser trace, and a standalone
-Python reproducer of the recorded actions. **Test fixed form** starts a fresh
-agent attempt on the repaired example.
+Python reproducer of the recorded actions. **Test fixed form** starts a fresh,
+linked agent attempt on the prebuilt repaired example; it does not edit the form.
 
 The browser checks a visible confirmation against the expected booking details.
 The model's own verdict cannot make a run pass or establish an accessibility
@@ -44,33 +44,41 @@ inconclusive; configuration and execution errors are reported separately.
 
 ## Demonstrated results
 
-Two independent hosted live runs used the same goal, expected details, NVIDIA
-model, and Chrome version:
+On October 25, 2026, Pacific time, a hosted live run detected a barrier in the
+broken demo, then its linked retest completed the same task on the repaired
+demo. Both used the same goal, expected details, NVIDIA model, and Chrome version:
 
 | Example | Observed result | Keyboard actions | Model calls | Reported elapsed time |
 | --- | --- | ---: | ---: | ---: |
-| Unreachable booking button | Barrier observed | 9 | 11 | 43.79 s |
-| Repaired booking form | Task completed; expected details matched | 8 | 8 | 35.12 s |
+| [Unreachable booking button](evidence/accessproof-2baf4f83.json) | Barrier observed | 12 | 14 | 54.39 s |
+| [Repaired booking form](evidence/accessproof-7ffb869f.json) | Task completed; expected details matched | 8 | 8 | 39.80 s |
 
 The broken example's action was omitted from sequential keyboard navigation.
 The repaired example reached the booking button and displayed the expected
-confirmation. These exports are separate runs with no parent link; the repaired
-run occurred first. They are a fixture comparison, not a linked retest or a
-reliability benchmark. See [EVALUATION.md](EVALUATION.md) for evidence and limits.
+confirmation. Its `parent_id` matches the broken run's full ID, and neither run
+records an execution error. The linked reports preserve this demo sequence;
+they do not establish a success rate, speed improvement, or automatic code repair.
+The new pair's browser test and trace have not been included with these reports.
+See [EVALUATION.md](EVALUATION.md) for evidence, limits, and the earlier independent
+fixture comparison with its separate successful replay and trace.
 
 ## Challenges and platform feedback draft
 
 Review this wording against your own experience before submitting:
 
 - Token Factory's OpenAI-compatible interface worked for live model planning from
-  the hosted application. The successful repaired-form run used eight model calls
-  and 14,351 tokens; the broken-form run used eleven calls and 23,291 tokens.
+  the hosted application. The October 25 linked repaired-form run used eight model
+  calls and 14,438 tokens; its broken-form parent used fourteen calls and 32,576
+  tokens.
 - Native dropdown interaction needed better application guidance. We added
   keyboard type-ahead using an observed option label, Tab to commit, selection
   state in observations, and before/after values in evidence. An earlier local
   attempt exhausted its action budget before this change.
 - An early API-key formatting failure came from our own copy/save helper. We added
   validation there before saving and copying the key for deployment.
+- An earlier live attempt failed bounded action validation. We added safe
+  response diagnostics; the two linked runs above completed without that error,
+  but repeated trials are still needed to assess reliability.
 - A model-specific cookbook example for bounded JSON actions and native keyboard
   controls would have helped this integration. Token counts are recorded in the
   exported reports; no dollar-cost estimate has been measured here.

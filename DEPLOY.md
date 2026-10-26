@@ -3,8 +3,9 @@
 The Docker image serves the dashboard and runs its single browser worker.
 NVIDIA model inference continues through Nebius Token Factory. The hosted demo is
 <https://accessproof-demo.onrender.com>. The supplied [evaluation](EVALUATION.md)
-records two hosted live runs: an observed barrier on the broken fixture and a
-successful booking on the repaired fixture.
+includes a linked hosted live sequence: an observed barrier on the broken fixture
+and a successful retest on the prebuilt repaired fixture. Earlier independent
+runs are preserved separately.
 
 ## Render: first hosted trial
 

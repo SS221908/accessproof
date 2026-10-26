@@ -18,10 +18,19 @@ NVIDIA model, and Nebius Token Factory's role. Use fictional sample details.
    tests, and traces. Capture the actual sequence, then use its result frames for
    the opening comparison. Rehearse once; live run duration can vary.
 
-The existing hosted exports are independent runs, and the repaired form ran
-first. If using those instead, label them **Recorded live runs — independent
-fixture comparison**. Present them as a comparison; do not imply their recorded
-chronology was a broken-form run followed by its linked repair.
+The October 25 hosted JSON reports preserve a linked sequence:
+[broken run 2baf4f83](evidence/accessproof-2baf4f83.json), then
+[repaired retest 7ffb869f](evidence/accessproof-7ffb869f.json). The retest's
+`parent_id` matches the broken run. They report 54.39 and 39.80 seconds respectively;
+new runs can take longer. These files are JSON evidence, not a saved screen
+recording. If their results are still available in the app, capture those result
+views and label them **Recorded live results — linked demo retest**. Download
+their browser tests and traces before a service restart removes runtime history.
+
+The earlier October 22 exports are independent runs, with the repaired form
+recorded first. If showing those, label them **Recorded live runs — independent
+fixture comparison**. The earlier successful replay and trace belong to that
+older run; do not present them as artifacts of the October 25 pair.
 
 ## Screen and narration
 
@@ -31,7 +40,7 @@ chronology was a broken-form run followed by its linked repair.
 | 0:15–0:30 | Select **Unreachable booking button**. Show goal, expected details, **Live NVIDIA agent**, and model name. | “Our first audience is campus web teams and small organizations maintaining essential forms. Here the goal is a Calculus tutoring booking for Alex Rivera, with explicit confirmation details.” |
 | 0:30–1:15 | Click **Start keyboard test**. Show the browser and timeline as the run proceeds. | “NVIDIA Nemotron 3.5 Super VL plans each action through Nebius Token Factory. Playwright presses keys and types into the focused control. The agent observes the new focus and values before choosing its next action.” |
 | 1:15–1:35 | **Barrier observed** and its evidence; select a useful timeline step. | “The fields are filled, but the booking control is missing from the sequential tab order. The report records focus traversal supporting this specific barrier. An agent getting stuck alone would not prove a failure.” |
-| 1:35–2:15 | Click **Test fixed form**. Show the new run and its confirmation. | “Now we run the same task on the repaired fixture. This is a fresh agent attempt. The keyboard reaches the booking button, and the browser verifies the expected name, email, and topic in the visible confirmation.” |
+| 1:35–2:15 | Click **Test fixed form**. Show the new run and its confirmation. | “Now we run the same task on our prebuilt repaired fixture. AccessProof links this fresh attempt to the earlier result. The keyboard reaches the booking button, and the browser verifies the expected name, email, and topic in the visible confirmation.” |
 | 2:15–2:35 | Download **JSON report** and **Browser test**. Briefly open the generated Python script. | “Developers get the result and action evidence, plus a standalone Playwright reproducer. It replays the recorded keyboard actions; the fresh agent run checks completion after a repair.” |
 | 2:35–2:50 | Return to the confirmed result; show repository and architecture caption. | “Render hosts the app and browser worker. NVIDIA inference runs on Nebius Token Factory. This prototype covers owned fixtures and does not certify full accessibility. Next come more live cases and feedback from keyboard users.” |
 
@@ -41,9 +50,10 @@ chronology was a broken-form run followed by its linked repair.
   shortened**. Keep run IDs and modes consistent across each sequence.
 - If presenting saved evidence, label it as recorded evidence rather than a new
   real-time run. Keep the earlier inconclusive attempt in the evaluation record.
-- Show actual measurements only when they match the displayed report. The current
-  hosted exports show 11 calls for the broken form and 8 for the repaired form;
-  new runs can differ. Avoid success-rate or timing-improvement claims.
+- Show actual measurements only when they match the displayed report. The October
+  25 linked exports show 14 calls for the broken form and 8 for the repaired form;
+  the older broken run shows 11 calls. New runs can differ. Avoid success-rate or
+  timing-improvement claims, and do not imply AccessProof repaired the code.
 - Confirm narration is audible, text is readable, and the exported duration is
   under three minutes. Upload it as a **public** YouTube video.
 - Add the final public video URL to Devpost and `HACKATHON.md`. Put the demo access

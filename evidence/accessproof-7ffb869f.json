@@ -1,0 +1,380 @@
+{
+  "id": "7ffb869f15414b4097477e597720db9c",
+  "scenario": "working",
+  "goal": "Book a tutoring appointment for Alex Rivera, alex@example.com, topic Calculus.",
+  "expected_text": "Alex Rivera \u00b7 alex@example.com \u00b7 Calculus",
+  "mode": "live",
+  "model": "nvidia/Nemotron-3.5-Super-VL",
+  "status": "passed",
+  "created_at": "2026-10-26T00:49:24.249970+00:00",
+  "updated_at": "2026-10-26T00:50:04.551611+00:00",
+  "parent_id": "2baf4f836bd44e3b8d7682cc58bf6a35",
+  "steps": [
+    {
+      "seq": 0,
+      "action": "observe",
+      "key": null,
+      "text": null,
+      "reason": "Initial browser state before keyboard interaction.",
+      "focused_before": "body",
+      "focused_after": "body",
+      "focused_tag": "body",
+      "input_kind": "other",
+      "value_before": "",
+      "value_after": "",
+      "value_changed": false,
+      "selected_label_before": null,
+      "selected_label_after": null,
+      "selected_index_before": null,
+      "selected_index_after": null,
+      "selects_before": [
+        {
+          "id": "topic",
+          "value": "",
+          "selected_index": 0,
+          "selected_label": "Choose a topic",
+          "multiple": false
+        }
+      ],
+      "selects_after": [
+        {
+          "id": "topic",
+          "value": "",
+          "selected_index": 0,
+          "selected_label": "Choose a topic",
+          "multiple": false
+        }
+      ],
+      "screenshot": "000.png",
+      "timestamp": "2026-10-26T00:49:38.644830+00:00"
+    },
+    {
+      "seq": 1,
+      "action": "press",
+      "key": "Tab",
+      "text": null,
+      "reason": "Move focus from body to the first form control, the Full name input.",
+      "focused_before": "body",
+      "focused_after": "name",
+      "focused_tag": "body",
+      "input_kind": "other",
+      "value_before": "",
+      "value_after": null,
+      "value_changed": null,
+      "selected_label_before": null,
+      "selected_label_after": null,
+      "selected_index_before": null,
+      "selected_index_after": null,
+      "selects_before": [
+        {
+          "id": "topic",
+          "value": "",
+          "selected_index": 0,
+          "selected_label": "Choose a topic",
+          "multiple": false
+        }
+      ],
+      "selects_after": [
+        {
+          "id": "topic",
+          "value": "",
+          "selected_index": 0,
+          "selected_label": "Choose a topic",
+          "multiple": false
+        }
+      ],
+      "screenshot": "001.png",
+      "timestamp": "2026-10-26T00:49:42.140165+00:00"
+    },
+    {
+      "seq": 2,
+      "action": "type",
+      "key": null,
+      "text": "Alex Rivera",
+      "reason": "Enter the full name into the focused Full name field.",
+      "focused_before": "name",
+      "focused_after": "name",
+      "focused_tag": "input",
+      "input_kind": "text",
+      "value_before": "",
+      "value_after": "Alex Rivera",
+      "value_changed": true,
+      "selected_label_before": null,
+      "selected_label_after": null,
+      "selected_index_before": null,
+      "selected_index_after": null,
+      "selects_before": [
+        {
+          "id": "topic",
+          "value": "",
+          "selected_index": 0,
+          "selected_label": "Choose a topic",
+          "multiple": false
+        }
+      ],
+      "selects_after": [
+        {
+          "id": "topic",
+          "value": "",
+          "selected_index": 0,
+          "selected_label": "Choose a topic",
+          "multiple": false
+        }
+      ],
+      "screenshot": "002.png",
+      "timestamp": "2026-10-26T00:49:45.942472+00:00"
+    },
+    {
+      "seq": 3,
+      "action": "press",
+      "key": "Tab",
+      "text": null,
+      "reason": "Move focus from the Full name field to the Email address field.",
+      "focused_before": "name",
+      "focused_after": "email",
+      "focused_tag": "input",
+      "input_kind": "text",
+      "value_before": "Alex Rivera",
+      "value_after": "Alex Rivera",
+      "value_changed": false,
+      "selected_label_before": null,
+      "selected_label_after": null,
+      "selected_index_before": null,
+      "selected_index_after": null,
+      "selects_before": [
+        {
+          "id": "topic",
+          "value": "",
+          "selected_index": 0,
+          "selected_label": "Choose a topic",
+          "multiple": false
+        }
+      ],
+      "selects_after": [
+        {
+          "id": "topic",
+          "value": "",
+          "selected_index": 0,
+          "selected_label": "Choose a topic",
+          "multiple": false
+        }
+      ],
+      "screenshot": "003.png",
+      "timestamp": "2026-10-26T00:49:48.140123+00:00"
+    },
+    {
+      "seq": 4,
+      "action": "type",
+      "key": null,
+      "text": "alex@example.com",
+      "reason": "Enter the email address into the focused Email address field.",
+      "focused_before": "email",
+      "focused_after": "email",
+      "focused_tag": "input",
+      "input_kind": "text",
+      "value_before": "",
+      "value_after": "alex@example.com",
+      "value_changed": true,
+      "selected_label_before": null,
+      "selected_label_after": null,
+      "selected_index_before": null,
+      "selected_index_after": null,
+      "selects_before": [
+        {
+          "id": "topic",
+          "value": "",
+          "selected_index": 0,
+          "selected_label": "Choose a topic",
+          "multiple": false
+        }
+      ],
+      "selects_after": [
+        {
+          "id": "topic",
+          "value": "",
+          "selected_index": 0,
+          "selected_label": "Choose a topic",
+          "multiple": false
+        }
+      ],
+      "screenshot": "004.png",
+      "timestamp": "2026-10-26T00:49:52.542084+00:00"
+    },
+    {
+      "seq": 5,
+      "action": "press",
+      "key": "Tab",
+      "text": null,
+      "reason": "Move focus from the Email address field to the Tutoring topic select.",
+      "focused_before": "email",
+      "focused_after": "topic",
+      "focused_tag": "input",
+      "input_kind": "text",
+      "value_before": "alex@example.com",
+      "value_after": "alex@example.com",
+      "value_changed": false,
+      "selected_label_before": null,
+      "selected_label_after": null,
+      "selected_index_before": null,
+      "selected_index_after": null,
+      "selects_before": [
+        {
+          "id": "topic",
+          "value": "",
+          "selected_index": 0,
+          "selected_label": "Choose a topic",
+          "multiple": false
+        }
+      ],
+      "selects_after": [
+        {
+          "id": "topic",
+          "value": "",
+          "selected_index": 0,
+          "selected_label": "Choose a topic",
+          "multiple": false
+        }
+      ],
+      "screenshot": "005.png",
+      "timestamp": "2026-10-26T00:49:55.037116+00:00"
+    },
+    {
+      "seq": 6,
+      "action": "type",
+      "key": null,
+      "text": "Calculus",
+      "reason": "Select Calculus from the Tutoring topic dropdown using type-ahead.",
+      "focused_before": "topic",
+      "focused_after": "topic",
+      "focused_tag": "select",
+      "input_kind": "select",
+      "value_before": "",
+      "value_after": "Calculus",
+      "value_changed": true,
+      "selected_label_before": "Choose a topic",
+      "selected_label_after": "Calculus",
+      "selected_index_before": 0,
+      "selected_index_after": 1,
+      "selects_before": [
+        {
+          "id": "topic",
+          "value": "",
+          "selected_index": 0,
+          "selected_label": "Choose a topic",
+          "multiple": false
+        }
+      ],
+      "selects_after": [
+        {
+          "id": "topic",
+          "value": "Calculus",
+          "selected_index": 1,
+          "selected_label": "Calculus",
+          "multiple": false
+        }
+      ],
+      "screenshot": "006.png",
+      "timestamp": "2026-10-26T00:49:57.643673+00:00"
+    },
+    {
+      "seq": 7,
+      "action": "press",
+      "key": "Tab",
+      "text": null,
+      "reason": "Move focus from the Tutoring topic select to the Reserve appointment submit button.",
+      "focused_before": "topic",
+      "focused_after": "register",
+      "focused_tag": "select",
+      "input_kind": "select",
+      "value_before": "Calculus",
+      "value_after": "Calculus",
+      "value_changed": false,
+      "selected_label_before": "Calculus",
+      "selected_label_after": "Calculus",
+      "selected_index_before": 1,
+      "selected_index_after": 1,
+      "selects_before": [
+        {
+          "id": "topic",
+          "value": "Calculus",
+          "selected_index": 1,
+          "selected_label": "Calculus",
+          "multiple": false
+        }
+      ],
+      "selects_after": [
+        {
+          "id": "topic",
+          "value": "Calculus",
+          "selected_index": 1,
+          "selected_label": "Calculus",
+          "multiple": false
+        }
+      ],
+      "screenshot": "007.png",
+      "timestamp": "2026-10-26T00:49:59.839226+00:00"
+    },
+    {
+      "seq": 8,
+      "action": "press",
+      "key": "Enter",
+      "text": null,
+      "reason": "Submit the completed appointment reservation form by activating the focused Reserve appointment button.",
+      "focused_before": "register",
+      "focused_after": "body",
+      "focused_tag": "button",
+      "input_kind": "other",
+      "value_before": "",
+      "value_after": null,
+      "value_changed": null,
+      "selected_label_before": null,
+      "selected_label_after": null,
+      "selected_index_before": null,
+      "selected_index_after": null,
+      "selects_before": [
+        {
+          "id": "topic",
+          "value": "Calculus",
+          "selected_index": 1,
+          "selected_label": "Calculus",
+          "multiple": false
+        }
+      ],
+      "selects_after": [],
+      "screenshot": "008.png",
+      "timestamp": "2026-10-26T00:50:01.839786+00:00"
+    }
+  ],
+  "report": {
+    "summary": "The keyboard task reached a visible, independent confirmation.",
+    "evidence": [
+      "Owned demo confirmation: \u2713 Appointment reserved Alex Rivera \u00b7 alex@example.com \u00b7 Calculus Wednesday \u00b7 3:00 PM \u00b7 Online This is a local demonstration booking.",
+      "The visible confirmation contains the expected task details."
+    ],
+    "steps_count": 8,
+    "success_text": "\u2713 Appointment reserved Alex Rivera \u00b7 alex@example.com \u00b7 Calculus Wednesday \u00b7 3:00 PM \u00b7 Online This is a local demonstration booking.",
+    "expected_text": "Alex Rivera \u00b7 alex@example.com \u00b7 Calculus",
+    "expected_text_matched": true,
+    "run_id": "7ffb869f15414b4097477e597720db9c",
+    "goal": "Book a tutoring appointment for Alex Rivera, alex@example.com, topic Calculus.",
+    "url": "https://accessproof-demo.onrender.com/demo/working",
+    "elapsed_seconds": 39.8,
+    "browser_version": "153.0.8010.12",
+    "blocked_requests": [],
+    "canceled_downloads": [],
+    "closed_popups": [],
+    "policy_violations": [],
+    "artifacts": {
+      "trace": "trace.zip",
+      "reproducer": "reproducer.py",
+      "events": "events.json"
+    }
+  },
+  "error": null,
+  "model_calls": 8,
+  "token_usage": {
+    "prompt_tokens": 13303,
+    "completion_tokens": 1135,
+    "total_tokens": 14438
+  }
+}
